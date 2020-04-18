@@ -20,6 +20,8 @@ import numpy as np
 import cv2
 import os
 import copy
+from sklearn.metrics import confusion_matrix
+from mlxtend.plotting import plot_confusion_matrix
 
 folder = 'visualize'
 try:
@@ -68,25 +70,28 @@ test_loader = DataLoader(dataset=test_set,
 
 
 
-class Net(nn.Module):
+class MaskNet(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 3, stride=1)
+        super(MaskNet, self).__init__()
+        self.norm1 = nn.BatchNorm2d(3)
+        self.norm2 = nn.BatchNorm2d(6)
+        self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 3, stride=1)
-        self.fc1 = nn.Linear(5184, 120)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 17 * 17, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 3)
 
     def forward(self, x):
+        X = self.norm1(x)
         x = self.pool(F.relu(self.conv1(x)))
+        x = self.norm2(x)
         x = self.pool(F.relu(self.conv2(x)))
         x = x.view(x.size(0),-1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
-
 
 
 def evaluation(model,dataloader):
@@ -112,7 +117,7 @@ epoch = 60
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = Net()
+net = MaskNet()
 net.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=learning_rate)
@@ -271,4 +276,31 @@ print('class:   good    none    bad')
 print('train acc:',train_acc)
 print('test acc:',test_acc)
 print('--------------------------------------------')
+
+def predict_and_label(dataloader):
+    predict = None
+    label = None
+    for imgs, labels in dataloader:
+        imgs = imgs.to(device)
+        labels = labels.to(device)
+        outputs = net(imgs).cpu().detach().numpy()
+        outputs = np.argmax(outputs,axis=1)
+        labels = labels.cpu()
+        if predict is None:
+            predict = outputs
+            label = labels
+        else:
+            predict = np.concatenate((predict,outputs))
+            label = np.concatenate((label,labels))
+        
+    return predict, label
+
+predict, label = predict_and_label(test_loader)
+
+cf_mat = confusion_matrix(predict,label)
+
+fig, ax = plot_confusion_matrix(cf_mat,figsize=(8,8),class_names=['good','none','bad'])
+ax.margins(2,2)
+plt.savefig(folder+'/confusion_matrix.png', bbox_inches = "tight")
+# plt.show()
 
