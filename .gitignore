@@ -3,3 +3,5 @@
 *.png
 *.jpeg
 .ipynb_checkpoints/
+*.pth
+*.pyc
