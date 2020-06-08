@@ -51,8 +51,8 @@ parser.add_argument("--epsilon_decay", default=1000000, type=float) # 500000 100
 parser.add_argument("--target_step", default=10000, type=int) # ?
 parser.add_argument("--eval_per_ep", default=10, type=int)
 parser.add_argument("--save_per_ep", default=50, type=int)
-parser.add_argument("--save_dir", default="./HW3/model")
-parser.add_argument("--log_file", default="./HW3/log.txt") # you can plot the figure accroding to the file
+parser.add_argument("--save_dir", default="./model")
+parser.add_argument("--log_file", default="./log.txt") # you can plot the figure accroding to the file
 parser.add_argument("--load_model", default=None)
 parser.add_argument("--train", default=True, type=bool)
 
@@ -73,7 +73,7 @@ class ReplayMemory(object):
         
 
     def sample(self, batch_size):
-        assert False, "You should check the source code for your homework!!" # Sample when you are training
+        # assert False, "You should check the source code for your homework!!" # Sample when you are training
         return random.sample(self.memory, batch_size)
     
     def __len__(self):
@@ -89,7 +89,7 @@ class CNN(nn.Module):
         self.bn2 = nn.BatchNorm2d(64)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
         self.bn3 = nn.BatchNorm2d(64)
-        assert False, "You should check the source code for your homework!!" # In original paper, there is no batch normalization and leaky relu.
+        # assert False, "You should check the source code for your homework!!" # In original paper, there is no batch normalization and leaky relu.
         
         def conv2d_size_out(size, kernel_size = 3, stride = 1):
             return (size - (kernel_size - 1) - 1) // stride  + 1
@@ -135,7 +135,7 @@ class DQN(object):
         self.interaction_steps += 1
         self.epsilon = self.EPS_END + np.maximum( (self.EPS_START-self.EPS_END) * (1 - self.interaction_steps/self.EPS_DECAY), 0) # linear decay
         if random.random() < self.epsilon:
-            assert False, "You should check the source code for your homework!!" # random select for epsilon greedy (Dependent on the exploration probability)
+            # assert False, "You should check the source code for your homework!!" # random select for epsilon greedy (Dependent on the exploration probability)
             return torch.tensor( [random.sample([0,1,2],1)], device=device, dtype=torch.long ) #torch.tensor([[random.randrange(self.action_dim)]], device=device, dtype=torch.long)
         else:
             with torch.no_grad():
@@ -143,7 +143,7 @@ class DQN(object):
 
     def evaluate_action(self, state, rand=0.1):
         if random.random() < rand:
-            assert False, "You should check the source code for your homework!!" # random select for evaluate action should be the final epsilon in training
+            # assert False, "You should check the source code for your homework!!" # random select for evaluate action should be the final epsilon in training
             return torch.tensor( [random.sample([0,1,2],1)], device=device, dtype=torch.long )
         with torch.no_grad():
             return self.target_net(state).max(1)[1].view(1, 1)
@@ -166,20 +166,20 @@ class DQN(object):
         action_batch = torch.cat(batch.action)
         reward_batch = torch.cat(batch.reward)
         
-        # calculate 
-        # the
-        # loss
-        # function
-        # here
-        # and
-        # backward
-        #loss = 0
-        assert False, "You should check the source code for your homework!!" # please check these pytorch and do regression problem
-        #self.optimizer.zero_grad()
-        #loss.backward()
-        #for param in self.policy_net.parameters():
-        #    param.grad.data.clamp_(-1, 1)
-        #self.optimizer.step()
+        state_action_values = self.policy_net(state_batch).gather(1, action_batch)
+        
+        next_state_values = torch.zeros(self.BATCH_SIZE,1, device=device)
+        next_state_values[final_mask.bitwise_not()] = self.target_net(non_final_next_states).max(1, True)[0].detach()
+
+        expected_state_action_values = (next_state_values * self.GAMMA) + reward_batch
+    
+        loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
+        
+        self.optimizer.zero_grad()
+        loss.backward()
+        for param in self.policy_net.parameters():
+            param.grad.data.clamp_(-1, 1)
+        self.optimizer.step()
 
         self.update_count += 1
         if self.update_count % args.target_step == 0:
@@ -188,12 +188,11 @@ class DQN(object):
         
     def update_target_net(self):
         with torch.no_grad():
-            assert False, "You should check the source code for your homework!!" # why need to do this function? Which update is better?
             self.target_net.load_state_dict(self.policy_net.state_dict())
             #for q, q_targ in zip(self.policy_net.parameters(), self.target_net.parameters()):
             #    q_targ.data.mul_(0.05)
             #    q_targ.data.add_(0.95 * q.data)
-            #self.target_net.eval()
+            # self.target_net.eval()
 
     def save_model(self, path="."):
         torch.save(self.target_net.state_dict(), path+'/q_target_checkpoint_{}.pth'.format(self.interaction_steps))
@@ -276,7 +275,6 @@ def main():
             if done:
                 next_state = None
 
-            assert False, "You should check the source code for your homework!!" # Here put the transition data on device you want and may convert when update
             agent.memory.push(  state, \
                                 action, \
                                 next_state, \
@@ -346,7 +344,6 @@ def test():
 if __name__ == "__main__":
     args = parser.parse_args()  #F or Terminal
     #args = parser.parse_args(args=[]) # For jupyter notebook
-    assert False, "You should check the source code for your homework!!" # Before you run function, please check hyperparameters again!!
     if args.train:
         main()
     else:
