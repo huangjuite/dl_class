@@ -159,15 +159,15 @@ def train(dataloader, generator, discriminator, optimizer_g, optimizer_d, criter
                 print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
                       % (epoch, num_epochs, iteration, len(dataloader),
                          errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
-                plt.figure(figsize=(10, 5))
-                plt.title("Generator and Discriminator Loss During Training")
-                plt.plot(losses_g, label="G")
-                plt.plot(losses_d, label="D")
-                plt.xlabel("iterations")
-                plt.ylabel("Loss")
-                plt.legend()
-                plt.savefig('./loss.png')
-                plt.close()
+                # plt.figure(figsize=(10, 5))
+                # plt.title("Generator and Discriminator Loss During Training")
+                # plt.plot(losses_g, label="G")
+                # plt.plot(losses_d, label="D")
+                # plt.xlabel("iterations")
+                # plt.ylabel("Loss")
+                # plt.legend()
+                # plt.savefig('./loss.png')
+                # plt.close()
 
             if iteration % 500 == 0:
                 with torch.no_grad():
@@ -180,7 +180,13 @@ def train(dataloader, generator, discriminator, optimizer_g, optimizer_d, criter
 
             iteration += 1
 
-            # Remember to save all things you need after all batches finished!!!
+    # Remember to save all things you need after all batches finished!!!
+    with open('loss_g.npy', 'wb') as f:
+        np.save(f, losses_g)
+    with open('loss_d.npy', 'wb') as f:
+        np.save(f, losses_d)
+
+            
 
 
 def save_model(loss_g, loss_d, iteration, model, max_to_keep=10):
