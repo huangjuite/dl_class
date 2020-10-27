@@ -56,7 +56,7 @@ controller-manager-msgs==0.17.0
 controller-manager-tests==0.17.0
 cov-core==1.15.0
 coverage==4.5
-cryptography==2.3
+cryptography==3.2
 cupshelpers==1.0
 cv-bridge==1.13.0
 cycler==0.10.0
