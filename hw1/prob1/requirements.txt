@@ -143,7 +143,7 @@ netifaces==0.10.4
 networkx==2.4
 nmea-navsat-driver==0.5.2
 nose2==0.7.4
-notebook==6.0.1
+notebook==6.1.5
 notify2==0.3
 numpy==1.17.4
 oauth==1.0.1
