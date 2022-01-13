@@ -157,7 +157,7 @@ pandocfilters==1.4.2
 parso==0.5.1
 pexpect==4.7.0
 pickleshare==0.7.5
-Pillow==6.2.1
+Pillow==9.0.0
 pluggy==0.6.0
 post==2019.4.13
 progressbar==2.5
